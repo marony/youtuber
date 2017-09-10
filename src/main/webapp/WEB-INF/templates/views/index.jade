@@ -1,0 +1,26 @@
+- attributes("title") = "YouTubeダウンロードサイト"
+- attributes("headline") = "Welcome to Scalatra"
+-@ val flash: org.scalatra.FlashMap
+-@ val files: List[java.io.File]
+
+-# Jade is the daddy of HTML template engines for Scala
+-# pug or jade
+-# https://scalate.github.io/scalate/documentation/jade-syntax.html#Scala_Evaluation
+
+h1= "YouTubeのURLを入力してね"
+
+form(method="POST" action="./")
+    input(type="text" name="youtube-url" value="")
+    input(type="submit" value="ダウンロード")
+
+div= "例) https://www.youtube.com/watch?v=Epw0yvKmN10"
+
+h2= "ダウンロードリスト"
+div= flash.getOrElse("notice", "")
+ul
+    - for (f <- files)
+        - val name = f.getName
+        - val length = f.length
+        li
+            a(href= name) #{name}(#{length}バイト)
+
