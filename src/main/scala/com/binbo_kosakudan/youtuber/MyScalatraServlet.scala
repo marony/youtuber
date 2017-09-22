@@ -10,11 +10,11 @@ import java.util.Date
 class MyScalatraServlet extends YoutuberStack
   with FlashMapSupport {
 
-  val getTitleCmd = "/usr/bin/youtube-dl -e"
-  val dlCmd = "/usr/bin/youtube-dl"
-  val dlOptions = "-f mp4"
-  val cnvMP4Cmd = "/usr/bin/ffmpeg"
-  val cnvMP3Cmd = "/usr/bin/ffmpeg"
+  val getTitleCmd = Seq("/usr/bin/youtube-dl", "-e")
+  val dlCmd = Seq("/usr/bin/youtube-dl")
+  val dlOptions = Seq("-f mp4")
+  val cnvMP4Cmd = Seq("/usr/bin/ffmpeg")
+  val cnvMP3Cmd = Seq("/usr/bin/ffmpeg")
 
   get("/") {
     contentType="text/html"
@@ -38,40 +38,40 @@ class MyScalatraServlet extends YoutuberStack
 
     // タイトルを取得
     val title = {
-      val cmd = getTitleCmd + " " + params("youtube-url")
+      val cmd: Seq[String] = getTitleCmd ++ Seq(params("youtube-url"))
       println(cmd)
-      val r = Process(cmd) !!
+      val r = cmd.!!
 
       println(r)
       r.trim
     }
     // MP4ダウンロード
     {
-      val cmd = dlCmd + " " + dlOptions + " " + params("youtube-url") + " -o " + tmpFilename + ".mp4"
+      val cmd: Seq[String] = dlCmd ++ dlOptions ++ Seq(params("youtube-url"), "-o", tmpFilename + ".mp4")
       println(cmd)
-      val r = Process(cmd) !!
+      val r = cmd.!!
 
       println(r)
     }
     // MP4の音量を変換
     {
-      val cmd = cnvMP4Cmd + " -i " + tmpFilename + ".mp4" + " -y -af dynaudnorm " + title + ".mp4"
+      val cmd: Seq[String] = cnvMP4Cmd ++ Seq("-i", tmpFilename + ".mp4", "-y", "-af", "dynaudnorm", title + ".mp4")
       println(cmd)
-      val r = Process(cmd) !!
+      val r = cmd.!!
 
       println(r)
     }
     // MP3に変換
     {
-      val cmd = cnvMP3Cmd + " -i " + tmpFilename + ".mp4" + " -y -af dynaudnorm -acodec libmp3lame -ab 128k " + title + ".mp3"
+      val cmd: Seq[String] = cnvMP3Cmd ++ Seq("-i", tmpFilename + ".mp4", "-y", "-af", "dynaudnorm", "-acodec", "libmp3lame", "-ab", "128k", title + ".mp3")
       println(cmd)
-      val r = Process(cmd) !!
+      val r = cmd.!!
 
       println(r)
     }
     // テンポラリファイルの削除
     try {
-
+      new java.io.File(tmpFilename).delete()
     }
     catch {
       case e: Exception =>
