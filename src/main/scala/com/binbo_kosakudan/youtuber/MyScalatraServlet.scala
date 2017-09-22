@@ -10,9 +10,11 @@ import java.util.Date
 class MyScalatraServlet extends YoutuberStack
   with FlashMapSupport {
 
+  val getTitleCmd = "/usr/bin/youtube-dl -e"
   val dlCmd = "/usr/bin/youtube-dl"
   val dlOptions = "-f mp4"
-  val cnvCmd = "/usr/bin/ffmpeg"
+  val cnvMP4Cmd = "/usr/bin/ffmpeg"
+  val cnvMP3Cmd = "/usr/bin/ffmpeg"
 
   get("/") {
     contentType="text/html"
@@ -21,7 +23,7 @@ class MyScalatraServlet extends YoutuberStack
       "files" -> new java.io.File("./")
         .listFiles.filter(f => f.getName.endsWith(".mp4") || f.getName.endsWith(".mp3"))
 //        .map(f => f.getName)
-        .sortWith((l, r) => l.getName > r.getName)
+        .sortWith((l, r) => l.lastModified > r.lastModified)
         .toList)
   }
 
@@ -32,21 +34,48 @@ class MyScalatraServlet extends YoutuberStack
   }
 
   post("/") {
-    val filename = "%tY%<tm%<td%<tH%<tM%<tS" format new Date
+    val tmpFilename = "%tY%<tm%<td%<tH%<tM%<tS" format new Date
 
+    // タイトルを取得
+    val title = {
+      val cmd = getTitleCmd + " " + params("youtube-url")
+      println(cmd)
+      val r = Process(cmd) !!
+
+      println(r)
+      r.trim
+    }
+    // MP4ダウンロード
     {
-      val cmd = dlCmd + " " + dlOptions + " " + params("youtube-url") + " -o " + filename + ".mp4"
+      val cmd = dlCmd + " " + dlOptions + " " + params("youtube-url") + " -o " + tmpFilename + ".mp4"
       println(cmd)
       val r = Process(cmd) !!
 
       println(r)
     }
+    // MP4の音量を変換
     {
-      val cmd = cnvCmd + " -i " + filename + ".mp4" + " -acodec libmp3lame -ab 128k " + filename + ".mp3"
+      val cmd = cnvMP4Cmd + " -i " + tmpFilename + ".mp4" + " -y -af dynaudnorm " + title + ".mp4"
       println(cmd)
       val r = Process(cmd) !!
 
       println(r)
+    }
+    // MP3に変換
+    {
+      val cmd = cnvMP3Cmd + " -i " + tmpFilename + ".mp4" + " -y -af dynaudnorm -acodec libmp3lame -ab 128k " + title + ".mp3"
+      println(cmd)
+      val r = Process(cmd) !!
+
+      println(r)
+    }
+    // テンポラリファイルの削除
+    try {
+
+    }
+    catch {
+      case e: Exception =>
+        println(e)
     }
     flash("notice") = "ダウンロード完了しました"
 

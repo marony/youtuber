@@ -7,20 +7,26 @@
 -# pug or jade
 -# https://scalate.github.io/scalate/documentation/jade-syntax.html#Scala_Evaluation
 
-h1= "YouTubeのURLを入力してね"
+div.container
+  div.hello-unit
+    h1= "YouTubeのURLを入力してね"
 
-form(method="POST" action="./")
-    input(type="text" name="youtube-url" value="")
-    input(type="submit" value="ダウンロード")
+  div.row
+    div.span10
+      form(method="POST" action="./")
+        input(type="text" name="youtube-url" value="")
+        input.btn.btn-primary.btn-large(type="submit" value="ダウンロード")
+      div= "例) https://www.youtube.com/watch?v=Epw0yvKmN10"
 
-div= "例) https://www.youtube.com/watch?v=Epw0yvKmN10"
-
-h2= "ダウンロードリスト"
-div= flash.getOrElse("notice", "")
-ul
-    - for (f <- files)
-        - val name = f.getName
-        - val length = f.length
-        li
+    div.span4
+      h2= "ダウンロードリスト"
+      div= flash.getOrElse("notice", "")
+      ul
+        - for (f <- files)
+          - val name = f.getName
+          - val length = f.length
+          li
             a(href= name) #{name}(#{length}バイト)
 
+  footer
+    p &copy; 2017 Atsushi Tada

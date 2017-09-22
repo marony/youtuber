@@ -6,7 +6,15 @@
 html
   head
     title= title
+    link(rel="stylesheet" href="/asset/css/bootstrap.min.css")
+    link(rel="stylesheet" href="/asset/css/bootstrap-overrides.css")
   body
-    #content
-      h1= headline
-      != body
+    script(src="/asset/js/jquery-1.7.min.js")
+    div.navbar.navbar-inverse
+      div.navbar-inner
+        div.container
+          a.brand(href='#') #{title}
+          ul.nav
+            li.active
+              a(href='#') #{headline}
+    != body
