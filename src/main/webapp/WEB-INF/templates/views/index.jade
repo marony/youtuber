@@ -12,21 +12,20 @@ div.container
     h1= "YouTubeのURLを入力してね"
 
   div.row
-    div.span10
-      form(method="POST" action="./")
-        input(type="text" name="youtube-url" value="")
-        input.btn.btn-primary.btn-large(type="submit" value="ダウンロード")
-      div= "例) https://www.youtube.com/watch?v=Epw0yvKmN10"
+    form(method="POST" action="./")
+      input(type="text" name="youtube-url" value="")
+      input.btn.btn-primary.btn-large(type="submit" value="ダウンロード")
+    div= "例) https://www.youtube.com/watch?v=Epw0yvKmN10"
 
-    div.span4
-      h2= "ダウンロードリスト"
-      div= flash.getOrElse("notice", "")
-      ul
-        - for (f <- files)
-          - val name = f.getName
-          - val length = f.length
-          li
-            a(href= name) #{name}(#{length}バイト)
+  div.row
+    h2= "ダウンロードリスト"
+    div= flash.getOrElse("notice", "")
+    ul
+      - for (f <- files)
+        - val name = f.getName
+        - val length = f.length
+        li
+          a(href= name) #{name}(#{length}バイト)
 
   footer
     p &copy; 2017 Atsushi Tada

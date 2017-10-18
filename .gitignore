@@ -1,3 +1,6 @@
+*.mp3
+*.mp4
+
 ## generic files to ignore
 *~
 *.lock
