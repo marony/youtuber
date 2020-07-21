@@ -6,6 +6,7 @@ import org.scalatra._
 
 import scala.sys.process._
 import java.util.Date
+import java.io._
 
 class MyScalatraServlet extends YoutuberStack
   with FlashMapSupport {
@@ -38,46 +39,62 @@ class MyScalatraServlet extends YoutuberStack
 
     // タイトルを取得
     val title = {
+      println("getTitle: " + params("youtube-url"))
       val cmd: Seq[String] = getTitleCmd ++ Seq(params("youtube-url"))
       println(cmd)
       val r = cmd.!!
 
       println(r)
-      r.trim
+      r.trim.replaceAll("[/]", "／")
     }
-    // MP4ダウンロード
-    {
-      val cmd: Seq[String] = dlCmd ++ dlOptions ++ Seq(params("youtube-url"), "-o", tmpFilename + ".mp4")
-      println(cmd)
-      val r = cmd.!!
-
-      println(r)
-    }
-    // MP4の音量を変換
-    {
-      val cmd: Seq[String] = cnvMP4Cmd ++ Seq("-i", tmpFilename + ".mp4", "-y", "-af", "dynaudnorm", title + ".mp4")
-      println(cmd)
-      val r = cmd.!!
-
-      println(r)
-    }
-    // MP3に変換
-    {
-      val cmd: Seq[String] = cnvMP3Cmd ++ Seq("-i", tmpFilename + ".mp4", "-y", "-af", "dynaudnorm", "-acodec", "libmp3lame", "-ab", "128k", title + ".mp3")
-      println(cmd)
-      val r = cmd.!!
-
-      println(r)
-    }
-    // テンポラリファイルの削除
     try {
-      new java.io.File(tmpFilename).delete()
+      // MP4ダウンロード
+      {
+        println("download: " + params("youtube-url") + ", " + tmpFilename + ".mp4")
+        val cmd: Seq[String] = dlCmd ++ dlOptions ++ Seq(params("youtube-url"), "-o", tmpFilename + ".mp4")
+        println(cmd)
+        val r = cmd.!!
+
+        println(r)
+      }
+      // MP4の音量を変換
+      {
+        println("cnvMP4: " + tmpFilename + ".mp4" + ", " + title + ".mp4")
+        val cmd: Seq[String] = cnvMP4Cmd ++ Seq("-i", tmpFilename + ".mp4", "-y", "-af", "dynaudnorm", title + ".mp4")
+        println(cmd)
+        val r = cmd.!!
+
+        println(r)
+      }
+      // MP3に変換
+      {
+        println("cnvMP3: " + tmpFilename + ".mp4" + ", " + title + ".mp3")
+        val cmd: Seq[String] = cnvMP3Cmd ++ Seq("-i", tmpFilename + ".mp4", "-y", "-af", "dynaudnorm", "-acodec", "libmp3lame", "-ab", "128k", title + ".mp3")
+        println(cmd)
+        val r = cmd.!!
+
+        println(r)
+      }
+      // テンポラリファイルの削除
+      try {
+        new java.io.File(tmpFilename).delete()
+      }
+      catch {
+        case e: Exception =>
+          println(e)
+      }
+      flash("notice") = "ダウンロード完了しました"
     }
     catch {
-      case e: Exception =>
-        println(e)
+      case e: Exception => {
+        val pw = new PrintWriter(new FileWriter("./error.txt", true))
+        pw.println("例外: " + e)
+        pw.println(title)
+        pw.println(params("youtube-url"))
+        pw.close
+        flash("notice") = "エラーが発生しました"
+      }
     }
-    flash("notice") = "ダウンロード完了しました"
 
     redirect("/")
   }

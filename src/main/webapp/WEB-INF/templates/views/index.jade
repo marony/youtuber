@@ -24,8 +24,11 @@ div.container
       - for (f <- files)
         - val name = f.getName
         - val length = f.length
+        - val date = new java.util.Date(f.lastModified)
         li
-          a(href= name) #{name}(#{length}バイト)
+          span #{date}
+          a(href= name) #{name}
+          span (#{length}バイト)
 
   footer
     p &copy; 2017 Atsushi Tada
